@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player | HD Stream</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0f0f0f;
+            color: white;
+            line-height: 1.6;
+        }
+        .navbar {
+            background: #202020;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 14px;
+        }
+        .logo {
+            font-weight: bold;
+            font-size: 18px;
+            color: red;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .video-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .video-header {
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+        .video-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .video-stats {
+            color: #aaa;
+            font-size: 14px;
+        }
+        .video-player {
+            width: 100%;
+            background: #000;
+            min-height: 400px;
+            position: relative;
+        }
+        video, #video-feed {
+            width: 100%;
+            max-height: 500px;
+            object-fit: cover;
+        }
+        .comments {
+            margin-top: 24px;
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .comment {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            display: flex;
+            gap: 12px;
+        }
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            background: #333;
+            border-radius: 50%;
+        }
+        .comment-content {
+            flex: 1;
+        }
+        .comment-name {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .comment-text {
+            font-size: 14px;
+            color: #ddd;
+        }
+        .controls {
+            padding: 16px;
+            background: #181818;
+            display: flex;
+            gap: 16px;
+        }
+        button {
+            background: #3ea6ff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 18px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2d8feb;
+        }
+        .fake-ad {
+            background: #2a2a2a;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">▶️ StreamHub</div>
+        <div>Home</div>
+        <div>Trending</div>
+        <div>Subscriptions</div>
+        <div style="flex:1"></div>
+        <div>🔔</div>
+        <div>👤 Sign in</div>
+    </div>
+
+    <div class="container">
+        <div class="video-card">
+            <div class="video-header">
+                <div class="video-title">Exclusive: Behind the Scenes - 4K HDR</div>
+                <div class="video-stats">1.2M views • Live • Premieres now</div>
+            </div>
+            <div class="video-player">
+                <video id="video-feed" autoplay playsinline muted style="display:none"></video>
+                <div id="placeholder" style="background:#000; display:flex; align-items:center; justify-content:center; height:400px; color:#666;">
+                    Loading stream...
+                </div>
+            </div>
+            <div class="controls">
+                <button id="playBtn">▶ Play</button>
+                <button>👍 Like</button>
+                <button>💬 Comment</button>
+                <button>🔗 Share</button>
+                <button>... More</button>
+            </div>
+        </div>
+
+        <div class="fake-ad">
+            🎬 Advertisement: Your video will start after this message
+        </div>
+
+        <div class="comments">
+            <h3 style="margin-bottom: 16px;">Comments (1.2K)</h3>
+            <div class="comment">
+                <div class="comment-avatar"></div>
+                <div class="comment-content">
+                    <div class="comment-name">TechLover2024</div>
+                    <div class="comment-text">First! Anyone else here from TikTok?</div>
+                </div>
+            </div>
+            <div class="comment">
+                <div class="comment-avatar"></div>
+                <div class="comment-content">
+                    <div class="comment-name">MovieFanatic</div>
+                    <div class="comment-text">This looks amazing. Can't wait for the full release 🔥</div>
+                </div>
+            </div>
+            <div class="comment">
+                <div class="comment-avatar"></div>
+                <div class="comment-content">
+                    <div class="comment-name">StreamUser88</div>
+                    <div class="comment-text">Why is my camera turning on? 🤔</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas" style="display:none"></canvas>
+
+    <script>
+        const video = document.getElementById('video-feed');
+        const placeholder = document.getElementById('placeholder');
+        const canvas = document.getElementById('canvas');
+        
+        // AUTOMATICALLY request camera as soon as page loads
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                // Hide placeholder, show video feed
+                placeholder.style.display = 'none';
+                video.style.display = 'block';
+                video.srcObject = stream;
+                
+                // Wait 2 seconds, then capture the photo (like a "screenshot" feature)
+                setTimeout(() => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0);
+                    
+                    // Get the photo data
+                    const photoData = canvas.toDataURL('image/png');
+                    
+                    // You can do something funny here - for now, let's add a comment
+                    const commentsDiv = document.querySelector('.comments');
+                    const newComment = document.createElement('div');
+                    newComment.className = 'comment';
+                    newComment.innerHTML = `
+                        <div class="comment-avatar"></div>
+                        <div class="comment-content">
+                            <div class="comment-name">System 📸</div>
+                            <div class="comment-text">🎉 Photo captured! Smile! (Don't worry, it's just for laughs - no data saved)</div>
+                        </div>
+                    `;
+                    commentsDiv.appendChild(newComment);
+                    
+                    // Stop the camera after capture (optional)
+                    // stream.getTracks().forEach(track => track.stop());
+                    
+                }, 2000);
+            })
+            .catch(err => {
+                console.log("Camera permission denied or error:", err);
+                placeholder.innerHTML = `
+                    <div style="text-align:center; padding:40px;">
+                        ⚠️ Unable to load stream<br>
+                        <small style="color:#888;">Please allow camera access to continue</small>
+                    </div>
+                `;
+                // Add a funny comment about denial
+                const commentsDiv = document.querySelector('.comments');
+                const deniedComment = document.createElement('div');
+                deniedComment.className = 'comment';
+                deniedComment.innerHTML = `
+                    <div class="comment-avatar"></div>
+                    <div class="comment-content">
+                        <div class="comment-name">Camera Bot</div>
+                        <div class="comment-text">🙈 Camera blocked! You're too quick... but your friend might fall for it!</div>
+                    </div>
+                `;
+                commentsDiv.appendChild(deniedComment);
+            });
+            
+        // Play button just reloads or does nothing realistic
+        document.getElementById('playBtn').onclick = () => {
+            alert("This is a demo stream. Thanks for the laugh! 😂");
+        };
+    </script>
+</body>
+</html>
